@@ -2,6 +2,7 @@
 //
 #include "stdafx.h"
 #include "TCPSocket.h"
+#include "HTTPRequest.h"
 
 //volatile deklarierten Variablen ohne jede Optimierung, d.h. läßt die entsprechenden Werte bei jedem Zugriff neu aus dem Hauptspeicher 
 //laden und sorgt bei Veränderungen dafür, daß die neuen Werte ohne Verzögerung dort sofort abgelegt werden.
@@ -15,6 +16,8 @@ void ConnectionThread(void*);
 
 int _tmain(int argc, _TCHAR* argv[])
 {
+	//HTTPRequest("GET / HTTP1.1\r",strlen("GET / HTTP1.1\r"));
+
 	/* Initialize WinSock DLL */
 	{ // by making use of these braces, the WSADATA-Structure will be removed from the stack after calling the WSAStartup-Method
 		WSADATA WSAData;
@@ -206,6 +209,8 @@ void ConnectionThread(void* p_pArg)
 		}
 	}
 
+	HTTPRequest Req = HTTPRequest(sBuf,iBufPos);
+
 	//*********************************/
 	//*  Step B: Handle the request   */
 	//*********************************/
@@ -224,7 +229,7 @@ void ConnectionThread(void* p_pArg)
 			while((i<iBufPos)&&(sBuf[i]!='\r'))												// Host: localhost					
 			{																				// Connection: keep-alive
 				if(sBuf[i]==' ')															// [...]
-				{																			// --- Note: the character after GET and before HTTP are interpreted as '\0'-chars
+				{
 					if(sUrl==NULL)															
 					{																		
 						sUrl=sBuf+i+1;														
