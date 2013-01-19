@@ -1,0 +1,38 @@
+﻿Build started 12/16/2012 2:50:55 PM.
+     1>Project "C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\Zaku-Webserver\Zaku-Webserver.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating "C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\build/Zaku-Webserver/Win32Debug\Zaku-Webserver.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yc"StdAfx.h" /Fp"C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\build/Zaku-Webserver/Win32Debug\Zaku-Webserver__Win32Debug.pch" /Fo"C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\build/Zaku-Webserver/Win32Debug\\" /Fd"C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\build/Zaku-Webserver/Win32Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt stdafx.cpp
+         stdafx.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yu"StdAfx.h" /Fp"C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\build/Zaku-Webserver/Win32Debug\Zaku-Webserver__Win32Debug.pch" /Fo"C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\build/Zaku-Webserver/Win32Debug\\" /Fd"C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\build/Zaku-Webserver/Win32Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt IPAddr4.cpp TCPSocket.cpp "Zaku-Webserver.cpp"
+         Zaku-Webserver.cpp
+         TCPSocket.cpp
+         IPAddr4.cpp
+         Generating Code...
+       ManifestResourceCompile:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\rc.exe /nologo /fo"C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\build/Zaku-Webserver/Win32Debug\Zaku-Webserver__Win32Debug.exe.embed.manifest.res" C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\build/Zaku-Webserver/Win32Debug\Zaku-Webserver__Win32Debug_manifest.rc 
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\bin\Zaku-Webserver__Win32Debug.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\build/Zaku-Webserver/Win32Debug\Zaku-Webserver__Win32Debug.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\bin\Zaku-Webserver__Win32Debug.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\bin\Zaku-Webserver__Win32Debug.lib" /MACHINE:X86 "C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\build/Zaku-Webserver/Win32Debug\Zaku-Webserver__Win32Debug.exe.embed.manifest.res"
+         "C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\build/Zaku-Webserver/Win32Debug\IPAddr4.obj"
+         "C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\build/Zaku-Webserver/Win32Debug\stdafx.obj"
+         "C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\build/Zaku-Webserver/Win32Debug\TCPSocket.obj"
+         "C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\build/Zaku-Webserver/Win32Debug\Zaku-Webserver.obj"
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /out:"C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\build/Zaku-Webserver/Win32Debug\Zaku-Webserver__Win32Debug.exe.embed.manifest" /manifest "C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\build/Zaku-Webserver/Win32Debug\Zaku-Webserver__Win32Debug.exe.intermediate.manifest"
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\rc.exe /nologo /fo"C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\build/Zaku-Webserver/Win32Debug\Zaku-Webserver__Win32Debug.exe.embed.manifest.res" C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\build/Zaku-Webserver/Win32Debug\Zaku-Webserver__Win32Debug_manifest.rc 
+       LinkEmbedManifest:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\bin\Zaku-Webserver__Win32Debug.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\build/Zaku-Webserver/Win32Debug\Zaku-Webserver__Win32Debug.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\bin\Zaku-Webserver__Win32Debug.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\bin\Zaku-Webserver__Win32Debug.lib" /MACHINE:X86 "C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\build/Zaku-Webserver/Win32Debug\Zaku-Webserver__Win32Debug.exe.embed.manifest.res"
+         "C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\build/Zaku-Webserver/Win32Debug\IPAddr4.obj"
+         "C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\build/Zaku-Webserver/Win32Debug\stdafx.obj"
+         "C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\build/Zaku-Webserver/Win32Debug\TCPSocket.obj"
+         "C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\build/Zaku-Webserver/Win32Debug\Zaku-Webserver.obj"
+         Zaku-Webserver.vcxproj -> C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\bin\Zaku-Webserver__Win32Debug.exe
+       FinalizeBuildStatus:
+         Deleting file "C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\build/Zaku-Webserver/Win32Debug\Zaku-Webserver.unsuccessfulbuild".
+         Touching "C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\build/Zaku-Webserver/Win32Debug\Zaku-Webserver.lastbuildstate".
+     1>Done Building Project "C:\Users\Marc\Desktop\Zaku-Webserver\Zaku-Webserver\Zaku-Webserver\Zaku-Webserver.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:32.44
