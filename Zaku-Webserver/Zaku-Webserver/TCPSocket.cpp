@@ -14,6 +14,15 @@ TCPSocket::~TCPSocket()
 	Close();
 }
 //---------------------------------------
+SOCKET TCPSocket::GetSocketHandle()
+{
+	return m_xSock;
+}
+//---------------------------------------
+SOCKET TCPAcceptSocket::GetSocketHandle()
+{
+	return m_xSock;
+}//---------------------------------------
 bool TCPSocket::Connect(IPAddr4 p_xTarget)
 {
 	m_xSock=WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL,0,WSA_FLAG_OVERLAPPED);
