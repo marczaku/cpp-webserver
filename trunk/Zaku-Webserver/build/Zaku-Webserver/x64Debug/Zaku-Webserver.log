@@ -1,22 +1,18 @@
-﻿Build started 1/21/2013 5:57:50 AM.
-     1>Project "C:\Users\Marc\Documents\Visual Studio 2012\Projects\zaku-webserver\Zaku-Webserver\Zaku-Webserver\Zaku-Webserver.vcxproj" on node 2 (Build target(s)).
+﻿Build started 21.01.2013 18:41:54.
+     1>Project "C:\Users\Marc.Zaku\Desktop\zaku-webserver\Zaku-Webserver\Zaku-Webserver\Zaku-Webserver.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\CL.exe /c /Zi /nologo /W3 /WX- /Od /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"C:\Users\Marc\Documents\Visual Studio 2012\Projects\zaku-webserver\Zaku-Webserver\build/Zaku-Webserver/x64Debug\Zaku-Webserver__x64Debug.pch" /Fo"C:\Users\Marc\Documents\Visual Studio 2012\Projects\zaku-webserver\Zaku-Webserver\build/Zaku-Webserver/x64Debug\\" /Fd"C:\Users\Marc\Documents\Visual Studio 2012\Projects\zaku-webserver\Zaku-Webserver\build/Zaku-Webserver/x64Debug\vc110.pdb" /Gd /TP /errorReport:prompt HttpD.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\CL.exe /c /Zi /nologo /W3 /WX- /Od /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"C:\Users\Marc.Zaku\Desktop\zaku-webserver\Zaku-Webserver\build/Zaku-Webserver/x64Debug\Zaku-Webserver__x64Debug.pch" /Fo"C:\Users\Marc.Zaku\Desktop\zaku-webserver\Zaku-Webserver\build/Zaku-Webserver/x64Debug\\" /Fd"C:\Users\Marc.Zaku\Desktop\zaku-webserver\Zaku-Webserver\build/Zaku-Webserver/x64Debug\vc110.pdb" /Gd /TP /errorReport:prompt HttpD.cpp
          HttpD.cpp
-     1>HttpD.cpp(228): warning C4101: 'SendBytes' : unreferenced local variable
-     1>HttpD.cpp(335): warning C4018: '<' : signed/unsigned mismatch
        Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Marc\Documents\Visual Studio 2012\Projects\zaku-webserver\Zaku-Webserver\bin\Zaku-Webserver__x64Debug.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\Marc\Documents\Visual Studio 2012\Projects\zaku-webserver\Zaku-Webserver\bin\Zaku-Webserver__x64Debug.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Marc\Documents\Visual Studio 2012\Projects\zaku-webserver\Zaku-Webserver\bin\Zaku-Webserver__x64Debug.lib" /MACHINE:X64 "C:\Users\Marc\Documents\Visual Studio 2012\Projects\zaku-webserver\Zaku-Webserver\build/Zaku-Webserver/x64Debug\HttpD.obj"
-         "C:\Users\Marc\Documents\Visual Studio 2012\Projects\zaku-webserver\Zaku-Webserver\build/Zaku-Webserver/x64Debug\HTTPRequest.obj"
-         "C:\Users\Marc\Documents\Visual Studio 2012\Projects\zaku-webserver\Zaku-Webserver\build/Zaku-Webserver/x64Debug\IPAddr4.obj"
-         "C:\Users\Marc\Documents\Visual Studio 2012\Projects\zaku-webserver\Zaku-Webserver\build/Zaku-Webserver/x64Debug\stdafx.obj"
-         "C:\Users\Marc\Documents\Visual Studio 2012\Projects\zaku-webserver\Zaku-Webserver\build/Zaku-Webserver/x64Debug\TCPSocket.obj"
-         "C:\Users\Marc\Documents\Visual Studio 2012\Projects\zaku-webserver\Zaku-Webserver\build/Zaku-Webserver/x64Debug\Thread.obj"
-         "C:\Users\Marc\Documents\Visual Studio 2012\Projects\zaku-webserver\Zaku-Webserver\build/Zaku-Webserver/x64Debug\ThreadPool.obj"
-         "C:\Users\Marc\Documents\Visual Studio 2012\Projects\zaku-webserver\Zaku-Webserver\build/Zaku-Webserver/x64Debug\Zaku-Webserver.obj"
-         Zaku-Webserver.vcxproj -> C:\Users\Marc\Documents\Visual Studio 2012\Projects\zaku-webserver\Zaku-Webserver\bin\Zaku-Webserver__x64Debug.exe
-     1>Done Building Project "C:\Users\Marc\Documents\Visual Studio 2012\Projects\zaku-webserver\Zaku-Webserver\Zaku-Webserver\Zaku-Webserver.vcxproj" (Build target(s)).
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Marc.Zaku\Desktop\zaku-webserver\Zaku-Webserver\bin\Zaku-Webserver__x64Debug.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\Marc.Zaku\Desktop\zaku-webserver\Zaku-Webserver\bin\Zaku-Webserver__x64Debug.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Marc.Zaku\Desktop\zaku-webserver\Zaku-Webserver\bin\Zaku-Webserver__x64Debug.lib" /MACHINE:X64 "C:\Users\Marc.Zaku\Desktop\zaku-webserver\Zaku-Webserver\build/Zaku-Webserver/x64Debug\HttpD.obj"
+         "C:\Users\Marc.Zaku\Desktop\zaku-webserver\Zaku-Webserver\build/Zaku-Webserver/x64Debug\HTTPRequest.obj"
+         "C:\Users\Marc.Zaku\Desktop\zaku-webserver\Zaku-Webserver\build/Zaku-Webserver/x64Debug\IPAddr4.obj"
+         "C:\Users\Marc.Zaku\Desktop\zaku-webserver\Zaku-Webserver\build/Zaku-Webserver/x64Debug\stdafx.obj"
+         "C:\Users\Marc.Zaku\Desktop\zaku-webserver\Zaku-Webserver\build/Zaku-Webserver/x64Debug\TCPSocket.obj"
+         "C:\Users\Marc.Zaku\Desktop\zaku-webserver\Zaku-Webserver\build/Zaku-Webserver/x64Debug\Zaku-Webserver.obj"
+         Zaku-Webserver.vcxproj -> C:\Users\Marc.Zaku\Desktop\zaku-webserver\Zaku-Webserver\bin\Zaku-Webserver__x64Debug.exe
+     1>Done Building Project "C:\Users\Marc.Zaku\Desktop\zaku-webserver\Zaku-Webserver\Zaku-Webserver\Zaku-Webserver.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:00.62
+Time Elapsed 00:00:00.33

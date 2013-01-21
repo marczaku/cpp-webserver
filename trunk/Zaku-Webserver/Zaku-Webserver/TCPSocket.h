@@ -55,6 +55,7 @@ private:
 
 	SOCKET m_xSock;
 	WSAEVENT m_hEvent;
+	WSAEVENT m_hCloseEvent;
 public:
 	TCPAcceptSocket();
 	~TCPAcceptSocket();
