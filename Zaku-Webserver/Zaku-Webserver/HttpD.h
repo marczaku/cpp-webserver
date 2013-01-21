@@ -22,20 +22,21 @@ public:
 
  	static unsigned int _stdcall StartMainThread(void* HttpDServer);
 	static unsigned int _stdcall StartConnectionThread(void* HttpDServer);
+	static void GetDataForRequest(char* DataBuf, DWORD* BufLen, int BufMaxLen,HttpD* Server, TRANSMIT_PACKETS_ELEMENT* Header, TRANSMIT_PACKETS_ELEMENT* Body);
+	static DWORD WINAPI ServerWorkerThread(LPVOID CompletionPortID);
 
 private:
-	int m_iNumberOfThreads;
-	bool m_IsRunning;
-	char* m_ContentPath;
-	HANDLE m_MainThreadHandle;
-	HANDLE m_hCompletionPort;
-	IPAddr4 m_ServerAddress;
-	//ThreadPool* m_ThreadPool;
+	int		m_iNumberOfThreads;
+	bool	m_IsRunning;
+	char*	m_ContentPath; // map (vhosts)
+	HANDLE	m_MainThreadHandle;
+	HANDLE	m_hCompletionPort;
+	IPAddr4	m_ServerAddress;
+	HANDLE* m_WorkerThreadHandles;
 
 private:
 	HttpD(const HttpD&);
-	HttpD& operator=(const HttpD&);	
-
+	HttpD& operator=(const HttpD&);
 	void Init(const char* Path);
 };
 

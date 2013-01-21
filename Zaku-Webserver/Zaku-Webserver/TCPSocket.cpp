@@ -186,6 +186,7 @@ bool TCPAcceptSocket::Open(IPAddr4 p_xAddr,int p_iMaxPending, int p_iMaxRetriesO
 				if(listen(m_xSock,p_iMaxPending)==0)
 				{
 					m_hEvent=WSACreateEvent();
+					m_hCloseEvent=WSACreateEvent();
 					if(WSAEventSelect(m_xSock,m_hEvent,FD_ACCEPT)==0)
 						return true;
 				}

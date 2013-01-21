@@ -23,6 +23,7 @@
 #include <MMSystem.h>
 #include <process.h>
 #include <math.h>
+#include <MSWSock.h>
 
 #pragma comment(lib, "ws2_32.lib")
 #pragma comment(lib, "winmm.lib")

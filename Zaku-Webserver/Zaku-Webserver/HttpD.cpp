@@ -1,12 +1,9 @@
 #include "stdafx.h"
 #include "HttpD.h"
 #include "TCPSocket.h"
+#include <io.h>
 
 #define BUFSIZE (1024*1024)
-
-DWORD WINAPI ServerWorkerThread(LPVOID CompletionPortID);
-
-void GetDataForRequest(char* DataBuf, DWORD* BufLen, int BufMaxLen);
 
 // Typedef definition
 typedef struct
@@ -23,6 +20,13 @@ typedef struct
 {
 	TCPSocket Socket;
 } PER_HANDLE_DATA, * LPPER_HANDLE_DATA;
+
+
+LPFN_ACCEPTEX lpfnAcceptEx = NULL;
+GUID GuidAcceptEx = WSAID_ACCEPTEX;
+LPFN_TRANSMITPACKETS lpfnTransmitPackets = NULL;
+GUID GuidTransmitPackets = WSAID_TRANSMITPACKETS;
+
 
 HttpD::HttpD(IPAddr4 p_ServerAddress)
 {
@@ -51,40 +55,6 @@ HttpD::~HttpD()
 	}
 }
 
-void HttpD::Start()
-{
-	if(m_IsRunning)
-	{
-		printf("HttpD is already running in %s\r\n",m_ContentPath);
-	}
-	else
-	{
-		printf("\r\nHttpD Starting in path %s\r\n", m_ContentPath);
-		for(int i = 0; i < m_iNumberOfThreads; i++)
-		{
-			HANDLE ThreadHandle;
-
-			// Create a server worker thread, and pass the
-			// completion port to the thread. NOTE: the
-			// ServerWorkerThread procedure is not defined in this listing.
-			if((ThreadHandle = CreateThread(NULL, 0, ServerWorkerThread, m_hCompletionPort, 0, NULL)) == NULL)
-			{
-				printf("\r\nCreateThread() failed with error %d\r\n", GetLastError());
-				return;
-			}
-			// Close the thread handle
-			CloseHandle(ThreadHandle);
-		}
-
-		m_MainThreadHandle = (HANDLE) _beginthreadex(nullptr, 0, StartMainThread, this, 0, nullptr);
-	}
-}
-
-void HttpD::Stop()
-{
-
-}
-
 void HttpD::Init(const char* p_Path)
 {
 	if(m_ContentPath!=0)
@@ -111,8 +81,6 @@ void HttpD::Init(const char* p_Path)
 		}
 	}
 
-	printf("\r\nHttpD Initialized.\r\n");
-
 	if((m_hCompletionPort = CreateIoCompletionPort(INVALID_HANDLE_VALUE,NULL,0,0))==NULL)
 	{
 		printf("CreateIoCompletionPort() failed with error %d\n", GetLastError());
@@ -122,11 +90,51 @@ void HttpD::Init(const char* p_Path)
 	{
 		SYSTEM_INFO SystemInfo;
 		GetSystemInfo(&SystemInfo);
-		m_iNumberOfThreads=SystemInfo.dwNumberOfProcessors*2;
+		m_iNumberOfThreads=SystemInfo.dwNumberOfProcessors;
 	}
-	
 
-	//m_ThreadPool = new ThreadPool(Config::FixedThreadPoolSize);
+	printf("HttpD Initialized.\r\n");
+}
+
+void HttpD::Start()
+{
+	if(m_IsRunning)
+	{
+		printf("HttpD is already running in %s\r\n",m_ContentPath);
+	}
+	else
+	{
+		m_IsRunning=true;
+		printf("HttpD Starting in path %s\r\n", m_ContentPath);
+		m_WorkerThreadHandles = new HANDLE[m_iNumberOfThreads];
+		for(int i = 0; i < m_iNumberOfThreads; i++)
+		{
+			HANDLE ThreadHandle;
+			if((ThreadHandle = CreateThread(NULL, 0, ServerWorkerThread, (LPVOID*)this, 0, NULL)) == NULL)
+			{
+				printf("CreateThread() failed with error %d\r\n", GetLastError());
+				return;
+			}
+			m_WorkerThreadHandles[i]=ThreadHandle;
+		}
+
+		m_MainThreadHandle = (HANDLE) _beginthreadex(nullptr, 0, StartMainThread, this, 0, nullptr);
+	}
+}
+
+void HttpD::Stop()
+{
+	if(m_IsRunning)
+	{
+		printf("HttpD shutting down.\r\n");
+	}
+
+	for(int i=0;i<m_iNumberOfThreads;i++)
+	{
+		PostQueuedCompletionStatus(m_hCompletionPort,0,0,0);
+	}
+
+	delete[] m_WorkerThreadHandles;
 }
 
 unsigned int HttpD::StartMainThread( void* p_HttpDServer )
@@ -139,13 +147,35 @@ unsigned int HttpD::StartMainThread( void* p_HttpDServer )
 	TCPAcceptSocket xAccept;
 	if(!xAccept.Open(HttpDServer->m_ServerAddress))
 	{
-		printf("\r\nHttpD Error opening Socket. Shutting down.\r\n");
+		printf("HttpD Error opening Socket. Shutting down.\r\n");
 		xAccept.Close();
 		return 1;
 	}
 
-	printf("\r\nHttpD Listening socket open.\r\n");
+	DWORD dwBytes;
 
+	int iResult = WSAIoctl(xAccept.GetSocketHandle(), SIO_GET_EXTENSION_FUNCTION_POINTER,
+		&GuidAcceptEx, sizeof (GuidAcceptEx), 
+		&lpfnAcceptEx, sizeof (lpfnAcceptEx), 
+		&dwBytes, NULL, NULL);
+	if (iResult == SOCKET_ERROR) {
+		wprintf(L"WSAIoctl failed with error: %u\n", WSAGetLastError());
+		closesocket(xAccept.GetSocketHandle());
+		WSACleanup();
+		return 1;
+	}
+	iResult = WSAIoctl(xAccept.GetSocketHandle(), SIO_GET_EXTENSION_FUNCTION_POINTER,
+		&GuidTransmitPackets, sizeof (GuidTransmitPackets), 
+		&lpfnTransmitPackets, sizeof (lpfnTransmitPackets), 
+		&dwBytes, NULL, NULL);
+	if (iResult == SOCKET_ERROR) {
+		wprintf(L"WSAIoctl failed with error: %u\n", WSAGetLastError());
+		closesocket(xAccept.GetSocketHandle());
+		WSACleanup();
+		return 1;
+	}
+
+	printf("HttpD Listening socket open.\r\n");
 
 	while(TRUE)
 	{
@@ -186,7 +216,7 @@ unsigned int HttpD::StartMainThread( void* p_HttpDServer )
 						PerHandleData->Socket.GetRemoteAddr().GetPort(),PerHandleData->Socket.GetSocketHandle());
 
 					Flags = 0;
-					
+
 					if (WSARecv(PerHandleData->Socket.GetSocketHandle(), &(PerIoData->DataBuf), 1, &RecvBytes, &Flags, &(PerIoData->Overlapped), NULL) == SOCKET_ERROR)
 					{
 						if (WSAGetLastError() != ERROR_IO_PENDING)
@@ -196,7 +226,6 @@ unsigned int HttpD::StartMainThread( void* p_HttpDServer )
 						}
 					}
 					iTimeout=1000;
-					//_beginthread(ConnectionThread,0,(void*)pxConnect);
 				}
 				else
 				{
@@ -207,7 +236,11 @@ unsigned int HttpD::StartMainThread( void* p_HttpDServer )
 				}
 			}
 		}
-	};
+		else
+		{
+			break;
+		}
+	}
 
 	xAccept.Close();
 
@@ -219,13 +252,14 @@ unsigned int HttpD::StartConnectionThread( void* HttpDServer )
 	return 0;
 }
 
-DWORD WINAPI ServerWorkerThread(LPVOID CompletionPortID)
+DWORD WINAPI HttpD::ServerWorkerThread(LPVOID Server_Handle)
 {
-	HANDLE CompletionPort = (HANDLE) CompletionPortID;
+	HttpD* Server = (HttpD*) Server_Handle;
+	HANDLE CompletionPort = (HANDLE) Server->m_hCompletionPort;
 	DWORD BytesTransferred;
 	LPPER_HANDLE_DATA PerHandleData;
 	LPPER_IO_OPERATION_DATA PerIoData;
-	DWORD SendBytes, RecvBytes;
+	DWORD RecvBytes;
 	DWORD Flags=0;
 
 	bool bReqComplete;
@@ -235,7 +269,12 @@ DWORD WINAPI ServerWorkerThread(LPVOID CompletionPortID)
 		if (GetQueuedCompletionStatus(CompletionPort, &BytesTransferred,
 			(PULONG_PTR)&PerHandleData, (LPOVERLAPPED *) &PerIoData, INFINITE) == 0)
 		{
-			printf("\r\nGetQueuedCompletionStatus(%i) failed with error %d\r\n", CompletionPort, GetLastError());
+			printf("GetQueuedCompletionStatus(%i) failed with error %d\r\n", CompletionPort, GetLastError());
+		}
+
+		if(PerHandleData==0)
+		{
+			break;
 		}
 
 		// First check to see if an error has occurred on the socket and if so
@@ -251,7 +290,6 @@ DWORD WINAPI ServerWorkerThread(LPVOID CompletionPortID)
 			continue;
 		}
 
-		printf("Found Socket:%i\r\n",PerHandleData->Socket);
 		if(PerIoData->BytesSEND==0) // No bytes to send? Then we're grabbing a request
 		{
 			bReqComplete=false;
@@ -276,14 +314,20 @@ DWORD WINAPI ServerWorkerThread(LPVOID CompletionPortID)
 			if(bReqComplete)
 			{
 				PerIoData->DataBuf.buf[0]=0;
-				printf("%s\r\n",PerIoData->Buffer);
-				// Check request and start sending
-				GetDataForRequest(PerIoData->Buffer,&(PerIoData->BytesRECV),BUFSIZE);
-				PerIoData->DataBuf.buf=PerIoData->Buffer;
-				PerIoData->DataBuf.len=PerIoData->BytesRECV;
-				PerIoData->BytesSEND=PerIoData->DataBuf.len;
-				PerIoData->BytesRECV=0;
-				WSASend(PerHandleData->Socket.GetSocketHandle(), &(PerIoData->DataBuf), 1, &RecvBytes, Flags, &(PerIoData->Overlapped), NULL);
+
+				TRANSMIT_PACKETS_ELEMENT* PacketElements;
+
+				if ((PacketElements = (TRANSMIT_PACKETS_ELEMENT*) GlobalAlloc(GPTR, sizeof(TRANSMIT_PACKETS_ELEMENT)*2)) == NULL)
+					printf("GlobalAlloc() failed with error %d\n", GetLastError());
+
+				GetDataForRequest(PerIoData->Buffer,&(PerIoData->BytesRECV),BUFSIZE,Server,&(PacketElements[0]),&(PacketElements[1]));
+				ZeroMemory(&(PerIoData->Overlapped), sizeof(OVERLAPPED));
+
+				if(!lpfnTransmitPackets(PerHandleData->Socket.GetSocketHandle(),PacketElements,2,0,&(PerIoData->Overlapped),NULL))
+				{
+					if(WSAGetLastError()!=WSA_IO_PENDING)
+						printf("lpfnTransmitPackets(%i) failed with error %d\r\n", CompletionPort, GetLastError());
+				}
 			}
 			else
 			{
@@ -291,28 +335,17 @@ DWORD WINAPI ServerWorkerThread(LPVOID CompletionPortID)
 				WSARecv(PerHandleData->Socket.GetSocketHandle(), &(PerIoData->DataBuf), 1, &RecvBytes, &Flags, &(PerIoData->Overlapped), NULL);
 			}
 		}
-		else
-		{
-			// Continue sending data until the buffer is empty
-			PerIoData->BytesSEND-=BytesTransferred;
-			PerIoData->DataBuf.buf+=BytesTransferred;
-			PerIoData->DataBuf.len-=BytesTransferred;
-			if(PerIoData->BytesSEND<=0)
-			{
-				PerIoData->BytesSEND=0;
-				PerIoData->BytesRECV=0;
-				PerIoData->DataBuf.buf=PerIoData->Buffer;
-				PerIoData->DataBuf.len=BUFSIZE;
-				WSARecv(PerHandleData->Socket.GetSocketHandle(), &(PerIoData->DataBuf), 1, &RecvBytes, &Flags, &(PerIoData->Overlapped), NULL);
-			}
-		}
 	}
 
-	printf("\r\nHttpD Shutting down Worker Thread. \r\n");
+	printf("HttpD Shutting down Worker Thread. \r\n");
+
+	return 0;
 }
 
-void GetDataForRequest(char* DataBuf, DWORD* BufLen, int BufMaxLen)
+void HttpD::GetDataForRequest(char* DataBuf, DWORD* BufLen, int BufMaxLen,HttpD* Server, TRANSMIT_PACKETS_ELEMENT* Header, TRANSMIT_PACKETS_ELEMENT* Body)
 {
+	ZeroMemory((Header), sizeof(TRANSMIT_PACKETS_ELEMENT)*2);
+
 	char* sBuf=DataBuf;
 	if((*BufLen>0))
 	{
@@ -323,20 +356,20 @@ void GetDataForRequest(char* DataBuf, DWORD* BufLen, int BufMaxLen)
 		int iEndPos=0;
 
 		{
-			int i=0;																		//Example for a HTTP-Request:
-			char* sUrl=NULL;																//
-			// read the requested file's name												// GET /main.css HTTP/1.1
-			while((i<*BufLen)&&(sBuf[i]!='\r'))												// Host: localhost					
-			{																				// Connection: keep-alive
-				if(sBuf[i]==' ')															// [...]
-				{
-					if(sUrl==NULL)															
-					{																		
-						sUrl=sBuf+i+1;														
-					}																		
-					sBuf[i]=0;																
-				}																			
+			unsigned int i=0;
+			char* sUrl=NULL;
+			// read the requested file's name
+			while((i<*BufLen)&&(sBuf[i]!='\r'))
+			{	
 				i++;
+				if(sBuf[i]==' ')
+				{
+					if(sUrl==NULL)
+					{
+						sUrl=sBuf+i+1;
+					}
+					sBuf[i]=0;
+				}
 			}
 			// if a directory was requested, add index.html to the url
 			if(strcmp(sUrl,"/")==0)
@@ -344,12 +377,12 @@ void GetDataForRequest(char* DataBuf, DWORD* BufLen, int BufMaxLen)
 				strcat(sUrl,"index.html");
 			}
 			char sFileName[512];
-			strcpy(sFileName,"C:\\Users\\Marc\\Documents\\Visual Studio 2012\\Projects\\zaku-webserver\\Zaku-Webserver\\content");
+			strcpy(sFileName,Server->m_ContentPath);
 			strcat(sFileName,sUrl);
 
-			FILE* pFile=NULL;
-			pFile=fopen(sFileName,"rb");
-			if(!pFile)
+			HANDLE File = CreateFileA(sFileName,GENERIC_READ,FILE_SHARE_READ,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
+
+			if(File==INVALID_HANDLE_VALUE)
 			{	// if we could not open the file: put a 404 Error into sBuf
 				printf("404:'%s'\r\n",sUrl);
 				iFileSize=-1;
@@ -361,17 +394,20 @@ void GetDataForRequest(char* DataBuf, DWORD* BufLen, int BufMaxLen)
 			}
 			else
 			{	// put a HTTP-Header as well as the file's content into sBuf
-				fseek(pFile,0,SEEK_END);
-				iFileSize=ftell(pFile);
-				fseek(pFile,0,SEEK_SET);
-				if(iFileSize+100>BufMaxLen){iFileSize=BufMaxLen-100;}
-				printf("200:'%s' (%d)\r\n",sUrl,iFileSize);
+				{
+					LARGE_INTEGER li;
+					GetFileSizeEx(File,&li);
+					iFileSize=static_cast<int>(li.QuadPart);
+				}
+				printf("200:'%s' (%dBytes)\r\n",sUrl,iFileSize);
 				sprintf_s(sBuf,BufMaxLen,"HTTP/1.0 200 OK\r\n"
 					"Content-Length:%d\r\n\r\n",iFileSize);
 				int iHeaderLen=(int)strlen(sBuf);
-				fread(sBuf+iHeaderLen,iFileSize,1,pFile);
-				*BufLen=iHeaderLen+iFileSize;
-				fclose(pFile);
+				Header->cLength=iHeaderLen;
+				Header->dwElFlags=TP_ELEMENT_MEMORY;
+				Header->pBuffer=sBuf;
+				Body->dwElFlags=TP_ELEMENT_FILE;
+				Body->hFile=File;
 			}
 		}
 	}
