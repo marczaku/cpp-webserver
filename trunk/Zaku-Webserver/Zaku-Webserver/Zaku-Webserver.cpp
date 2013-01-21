@@ -3,6 +3,7 @@
 #include "stdafx.h"
 #include "TCPSocket.h"
 #include "HTTPRequest.h"
+#include "HttpD.h"
 
 //volatile deklarierten Variablen ohne jede Optimierung, d.h. läßt die entsprechenden Werte bei jedem Zugriff neu aus dem Hauptspeicher 
 //laden und sorgt bei Veränderungen dafür, daß die neuen Werte ohne Verzögerung dort sofort abgelegt werden.
@@ -34,10 +35,18 @@ int _tmain(int argc, _TCHAR* argv[])
 		g_sContentPath[i+1]=0;
 		strcat(g_sContentPath,"content");
 	}
-	printf("Starting in path %s\r\n", g_sContentPath);
+
+	IPAddr4 xAddr;
+	memset(&xAddr,0,sizeof(xAddr));
+	xAddr.Set("localhost:80");
+
+	HttpD xhttpD(xAddr);
+	xhttpD.Start();
+
+	//printf("Starting in path %s\r\n", g_sContentPath);
 
 	/* Kick off the MainThread that opens a socket and handles incoming requests */
-	_beginthread(MainThread,0,NULL);
+	//_beginthread(MainThread,0,NULL);
 
 	/* Main Loop, checking for Quitting conditions */
 	while(!g_bQuit)

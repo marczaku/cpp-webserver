@@ -25,6 +25,8 @@ public:
 	TCPSocket();
 	~TCPSocket();
 
+	SOCKET GetSocketHandle();
+
 	bool Connect(IPAddr4 p_xTarget);
 	void Close();
 
@@ -57,6 +59,7 @@ public:
 	TCPAcceptSocket();
 	~TCPAcceptSocket();
 
+	SOCKET GetSocketHandle();
 	bool IsOpen() const;
 	bool Open(IPAddr4 p_xAddr, int p_iMaxPending=-1,int p_iMaxRetriesOnUsed=0);
 	void Close();
