@@ -186,6 +186,7 @@
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Connection.h" />
     <ClInclude Include="HttpD.h" />
     <ClInclude Include="HTTPRequest.h" />
     <ClInclude Include="IPAddr4.h" />
@@ -194,6 +195,7 @@
     <ClInclude Include="TCPSocket.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Connection.cpp" />
     <ClCompile Include="HttpD.cpp" />
     <ClCompile Include="HTTPRequest.cpp" />
     <ClCompile Include="IPAddr4.cpp" />

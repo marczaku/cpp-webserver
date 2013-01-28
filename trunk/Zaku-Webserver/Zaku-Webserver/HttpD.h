@@ -5,6 +5,7 @@
 #define HTTPD_H_INCLUDED
 
 #include "IPAddr4.h"
+#include "Connection.h"
 
 //class ThreadPool;
 
@@ -21,18 +22,18 @@ public:
 	void Stop();
 
  	static unsigned int _stdcall StartMainThread(void* HttpDServer);
-	static unsigned int _stdcall StartConnectionThread(void* HttpDServer);
 	static void GetDataForRequest(char* DataBuf, DWORD* BufLen, int BufMaxLen,HttpD* Server, TRANSMIT_PACKETS_ELEMENT* Header, TRANSMIT_PACKETS_ELEMENT* Body);
 	static DWORD WINAPI ServerWorkerThread(LPVOID CompletionPortID);
 
 private:
-	int		m_iNumberOfThreads;
-	bool	m_IsRunning;
-	char*	m_ContentPath; // map (vhosts)
-	HANDLE	m_MainThreadHandle;
-	HANDLE	m_hCompletionPort;
-	IPAddr4	m_ServerAddress;
-	HANDLE* m_WorkerThreadHandles;
+	int			m_iNumberOfThreads;
+	bool		m_IsRunning;
+	char*		m_ContentPath; // map (vhosts)
+	HANDLE		m_MainThreadHandle;
+	HANDLE		m_hCompletionPort;
+	IPAddr4		m_ServerAddress;
+	HANDLE*		m_WorkerThreadHandles;
+	Connection* m_Connections;
 
 private:
 	HttpD(const HttpD&);

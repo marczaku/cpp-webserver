@@ -2,24 +2,10 @@
 #include "HttpD.h"
 #include "TCPSocket.h"
 #include <io.h>
+#include "Connection.h"
 
 #define BUFSIZE (1024*1024)
 
-// Typedef definition
-typedef struct
-{
-	OVERLAPPED Overlapped;
-	WSABUF DataBuf;
-	CHAR Buffer[BUFSIZE];
-	DWORD BytesSEND;
-	DWORD BytesRECV;
-} PER_IO_OPERATION_DATA, * LPPER_IO_OPERATION_DATA;
-
-// Structure definition
-typedef struct
-{
-	TCPSocket Socket;
-} PER_HANDLE_DATA, * LPPER_HANDLE_DATA;
 
 
 LPFN_ACCEPTEX lpfnAcceptEx = NULL;
@@ -139,8 +125,7 @@ void HttpD::Stop()
 
 unsigned int HttpD::StartMainThread( void* p_HttpDServer )
 {
-	LPPER_IO_OPERATION_DATA PerIoData;
-	LPPER_HANDLE_DATA PerHandleData;
+	Connection* NewConnection;
 	DWORD Flags;
 	DWORD RecvBytes;
 	HttpD* HttpDServer = (HttpD*)p_HttpDServer;
@@ -181,48 +166,33 @@ unsigned int HttpD::StartMainThread( void* p_HttpDServer )
 	{
 		if(xAccept.ConnectionPending(INFINITE))
 		{
-			if ((PerHandleData = (LPPER_HANDLE_DATA) GlobalAlloc(GPTR, sizeof(PER_HANDLE_DATA))) == NULL)
-				printf("GlobalAlloc() failed with error %d\n", GetLastError());
+			NewConnection = new Connection();
 			int iTimeout=0;
 			while(iTimeout<1000) // No data received
 			{
-				if(xAccept.Accept(PerHandleData->Socket))
+				if(xAccept.Accept(NewConnection->Socket))
 				{
 
-					if(CreateIoCompletionPort((HANDLE) PerHandleData->Socket.GetSocketHandle(), HttpDServer->m_hCompletionPort, (ULONG_PTR) PerHandleData, 0)==NULL)
+					if(CreateIoCompletionPort((HANDLE) NewConnection->Socket.GetSocketHandle(), HttpDServer->m_hCompletionPort, (ULONG_PTR) NewConnection, 0)==NULL)
 					{
 						printf("CreateIoCompletionPort() failed with error %d\n", GetLastError());
 						return 1;
 					}
 
-					// Create per I/O socket information structure to associate with the WSARecv call below
-					if ((PerIoData = (LPPER_IO_OPERATION_DATA) GlobalAlloc(GPTR, sizeof(PER_IO_OPERATION_DATA))) == NULL)
-					{
-						printf("GlobalAlloc() failed with error %d\n", GetLastError());
-						return 1;
-					}
-
-					ZeroMemory(&(PerIoData->Overlapped), sizeof(OVERLAPPED));
-					PerIoData->BytesSEND = 0;
-					PerIoData->BytesRECV = 0;
-					PerIoData->DataBuf.len = BUFSIZE;
-					PerIoData->DataBuf.buf = PerIoData->Buffer;
-
 					printf("Connection started %d.%d.%d.%d:%d on Socket %d\r\n",
-						PerHandleData->Socket.GetRemoteAddr().sin_addr.S_un.S_un_b.s_b1,
-						PerHandleData->Socket.GetRemoteAddr().sin_addr.S_un.S_un_b.s_b2,
-						PerHandleData->Socket.GetRemoteAddr().sin_addr.S_un.S_un_b.s_b3,
-						PerHandleData->Socket.GetRemoteAddr().sin_addr.S_un.S_un_b.s_b4,
-						PerHandleData->Socket.GetRemoteAddr().GetPort(),PerHandleData->Socket.GetSocketHandle());
+						NewConnection->Socket.GetRemoteAddr().sin_addr.S_un.S_un_b.s_b1,
+						NewConnection->Socket.GetRemoteAddr().sin_addr.S_un.S_un_b.s_b2,
+						NewConnection->Socket.GetRemoteAddr().sin_addr.S_un.S_un_b.s_b3,
+						NewConnection->Socket.GetRemoteAddr().sin_addr.S_un.S_un_b.s_b4,
+						NewConnection->Socket.GetRemoteAddr().GetPort(),NewConnection->Socket.GetSocketHandle());
 
 					Flags = 0;
 
-					if (WSARecv(PerHandleData->Socket.GetSocketHandle(), &(PerIoData->DataBuf), 1, &RecvBytes, &Flags, &(PerIoData->Overlapped), NULL) == SOCKET_ERROR)
+					if (WSARecv(NewConnection->Socket.GetSocketHandle(), &(NewConnection->OverlappedIO->DataBuf), 1, &RecvBytes, &Flags, (LPWSAOVERLAPPED)(NewConnection->OverlappedIO), NULL) == SOCKET_ERROR)
 					{
 						if (WSAGetLastError() != ERROR_IO_PENDING)
 						{
 							printf("WSARecv() failed with error %d\n", WSAGetLastError());
-							return 1;
 						}
 					}
 					iTimeout=1000;
@@ -231,8 +201,6 @@ unsigned int HttpD::StartMainThread( void* p_HttpDServer )
 				{
 					Sleep(5);
 					iTimeout++;
-					//if(iTimeout>=1000)
-					//	delete pxConnect;
 				}
 			}
 		}
@@ -247,18 +215,13 @@ unsigned int HttpD::StartMainThread( void* p_HttpDServer )
 	return 0;
 }
 
-unsigned int HttpD::StartConnectionThread( void* HttpDServer )
-{
-	return 0;
-}
-
 DWORD WINAPI HttpD::ServerWorkerThread(LPVOID Server_Handle)
 {
 	HttpD* Server = (HttpD*) Server_Handle;
 	HANDLE CompletionPort = (HANDLE) Server->m_hCompletionPort;
 	DWORD BytesTransferred;
-	LPPER_HANDLE_DATA PerHandleData;
-	LPPER_IO_OPERATION_DATA PerIoData;
+	Connection* PerHandleData;
+	OverlappedEx* PerIoData;
 	DWORD RecvBytes;
 	DWORD Flags=0;
 
@@ -277,9 +240,7 @@ DWORD WINAPI HttpD::ServerWorkerThread(LPVOID Server_Handle)
 			break;
 		}
 
-		// First check to see if an error has occurred on the socket and if so
-		// then close the socket and cleanup the SOCKET_INFORMATION structure
-		// associated with the socket
+		// if an error has occurred close the socket and cleanup the SOCKET_INFORMATION structure
 		if (BytesTransferred == 0)
 		{
 			printf("Closing socket %d\n", PerHandleData->Socket.GetSocketHandle());
@@ -320,10 +281,10 @@ DWORD WINAPI HttpD::ServerWorkerThread(LPVOID Server_Handle)
 				if ((PacketElements = (TRANSMIT_PACKETS_ELEMENT*) GlobalAlloc(GPTR, sizeof(TRANSMIT_PACKETS_ELEMENT)*2)) == NULL)
 					printf("GlobalAlloc() failed with error %d\n", GetLastError());
 
-				GetDataForRequest(PerIoData->Buffer,&(PerIoData->BytesRECV),BUFSIZE,Server,&(PacketElements[0]),&(PacketElements[1]));
-				ZeroMemory(&(PerIoData->Overlapped), sizeof(OVERLAPPED));
+				GetDataForRequest(PerHandleData->Buffer,&(PerIoData->BytesRECV),BUFSIZE,Server,&(PacketElements[0]),&(PacketElements[1]));
+				ZeroMemory(PerIoData, sizeof(OVERLAPPED));
 
-				if(!lpfnTransmitPackets(PerHandleData->Socket.GetSocketHandle(),PacketElements,2,0,&(PerIoData->Overlapped),NULL))
+				if(!lpfnTransmitPackets(PerHandleData->Socket.GetSocketHandle(),PacketElements,2,0,(LPOVERLAPPED)(PerIoData),NULL))
 				{
 					if(WSAGetLastError()!=WSA_IO_PENDING)
 						printf("lpfnTransmitPackets(%i) failed with error %d\r\n", CompletionPort, GetLastError());
@@ -332,7 +293,7 @@ DWORD WINAPI HttpD::ServerWorkerThread(LPVOID Server_Handle)
 			else
 			{
 				// Continue receiving data until the request is complete
-				WSARecv(PerHandleData->Socket.GetSocketHandle(), &(PerIoData->DataBuf), 1, &RecvBytes, &Flags, &(PerIoData->Overlapped), NULL);
+				WSARecv(PerHandleData->Socket.GetSocketHandle(), &(PerIoData->DataBuf), 1, &RecvBytes, &Flags, (LPOVERLAPPED)(PerIoData), NULL);
 			}
 		}
 	}
@@ -374,7 +335,7 @@ void HttpD::GetDataForRequest(char* DataBuf, DWORD* BufLen, int BufMaxLen,HttpD*
 			// if a directory was requested, add index.html to the url
 			if(strcmp(sUrl,"/")==0)
 			{
-				strcat(sUrl,"index.html");
+				strcat(sUrl,"index.html"); 
 			}
 			char sFileName[512];
 			strcpy(sFileName,Server->m_ContentPath);
